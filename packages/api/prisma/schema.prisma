@@ -1,0 +1,62 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =================================================================
+// MODELO DE USUARIO (Versión 2.0)
+// Unifica autenticación, datos personales, de cliente y de chofer.
+// Incluye el rol 'ADMINISTRATIVO' y campos condicionales.
+// =================================================================
+model User {
+  // --- Campos de Identificación ---
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+
+  // --- Datos Personales y de Contacto ---
+  nombre    String
+  apellido  String
+  telefono  String?
+
+  // --- Datos de Cliente (Opcionales) ---
+  cuit        String? @unique
+  razonSocial String?
+
+  // --- Datos de Chofer (Opcionales) ---
+  tipoContratacion TipoContratacion?
+
+  // --- Campos de Roles y Permisos ---
+  rol        Role     @default(CLIENTE)
+  verificado Boolean  @default(false)
+  verificationToken  String?  @unique
+
+  // --- Campos de Auditoría ---
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// =================================================================
+// TIPO ENUMERADO PARA ROLES
+// =================================================================
+enum Role {
+  ADMIN
+  ADMINISTRATIVO
+  CHOFER
+  CLIENTE
+}
+
+// =================================================================
+// TIPO ENUMERADO PARA TIPO DE CONTRATACIÓN DE CHOFER
+// =================================================================
+enum TipoContratacion {
+  EN_RELACION_DE_DEPENDENCIA
+  CONTRATADO
+}

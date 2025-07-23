@@ -1,0 +1,21 @@
+{
+  "name": "sda-logistics-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Plataforma logística integral para Sol del Amanecer.",
+  "author": "Tu Nombre o el de tu Equipo",
+  "license": "UNLICENSED",
+  "scripts": {
+    "dev": "pnpm --filter ./packages/web dev",
+    "dev:api": "pnpm --filter ./packages/api dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.5"
+  },
+  "packageManager": "pnpm@9.1.0"
+}

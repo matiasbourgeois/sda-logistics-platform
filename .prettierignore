@@ -1,0 +1,13 @@
+# Ignorar dependencias
+node_modules
+.pnpm-store
+
+# Ignorar outputs de compilación
+dist
+.next
+build
+
+# Ignorar logs y archivos de entorno
+logs
+*.log
+.env*

@@ -1,0 +1,36 @@
+# Versión del formato de Docker Compose. Es como decir qué "idioma" estamos hablando.
+version: '3.8'
+
+# Aquí definimos la lista de "servicios" o contenedores que queremos.
+services:
+  # Nombramos a nuestro servicio de base de datos 'postgres'.
+  postgres:
+    # Le decimos a Docker que use la imagen oficial de PostgreSQL, versión 16.
+    # Una "imagen" es una plantilla pre-hecha de un software.
+    image: postgres:16
+    # Nombre que le daremos al contenedor en ejecución para identificarlo fácilmente.
+    container_name: sda-postgres
+    # Variables de entorno que necesita PostgreSQL para iniciarse.
+    environment:
+      # Definimos el usuario principal de la base de datos.
+      POSTGRES_USER: postgres
+      # Definimos la contraseña para ese usuario. ¡Guárdala, la usaremos pronto!
+      POSTGRES_PASSWORD: mysecretpassword
+      # Definimos el nombre de la base de datos que se creará automáticamente.
+      POSTGRES_DB: sda_logistics
+    # Mapeo de puertos. Esto expone el puerto interno del contenedor (5432)
+    # al mismo puerto en tu máquina (Windows), para que nuestra API pueda conectarse.
+    ports:
+      - "5432:5432"
+    # Volúmenes. Esto es crucial. Le decimos a Docker que guarde los datos de la base de datos
+    # en una carpeta en tu máquina, para que si apagas o eliminas el contenedor, los datos no se pierdan.
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    # Siempre reiniciar el contenedor si se detiene, a menos que lo paremos nosotros.
+    restart: unless-stopped
+
+# Aquí definimos los "volúmenes" que nombramos arriba.
+volumes:
+  postgres-data:
+    # Le decimos a Docker que él se encargue de gestionar este volumen.
+    driver: local
