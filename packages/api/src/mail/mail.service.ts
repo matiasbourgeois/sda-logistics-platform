@@ -23,8 +23,8 @@ export class MailService {
     });
   }
 
-  // NUEVO MÉTODO PARA ENVIAR EL EMAIL DE VERIFICACIÓN
-  async sendUserConfirmation(user: User, token: string) {
+  // CORREGIDO: Cambiado el tipo de 'user' a Omit<User, 'password'>
+  async sendUserConfirmation(user: Omit<User, 'password'>, token: string) {
     // A futuro, la URL debería venir de una variable de entorno
     const url = `http://localhost:3001/auth/verify?token=${token}`;
 

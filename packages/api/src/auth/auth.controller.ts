@@ -19,7 +19,14 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('login')
   async signIn(@Body(new ValidationPipe()) loginDto: LoginDto) {
-    // ... (este método no cambia)
+    const user = await this.authService.validateUser(
+      loginDto.email,
+      loginDto.password,
+    );
+    if (!user) {
+      throw new UnauthorizedException('Credenciales inválidas');
+    }
+    return this.authService.login(user);
   }
 
   @Post('register')

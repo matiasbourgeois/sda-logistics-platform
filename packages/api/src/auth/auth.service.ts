@@ -32,20 +32,21 @@ export class AuthService {
     };
   }
 
-async register(createUserDto: CreateUserDto) {
-  const verificationToken = randomBytes(32).toString('hex');
+  async register(createUserDto: CreateUserDto) {
+    const verificationToken = randomBytes(32).toString('hex');
 
-  // Ahora llamamos al método 'create' pasando el token como segundo argumento
-  const newUser = await this.usersService.create(
-    createUserDto,
-    verificationToken,
-  );
+    // Creamos el usuario sin el token de verificación inicialmente
+    const newUser = await this.usersService.create(createUserDto);
 
-  await this.mailService.sendUserConfirmation(newUser, verificationToken);
+    // Ahora, asociamos el token de verificación al usuario recién creado
+    await this.usersService.setVerificationToken(newUser.id, verificationToken);
 
-  const { password, ...result } = newUser;
-  return result;
-}
+    // Enviamos el correo de confirmación
+    await this.mailService.sendUserConfirmation(newUser, verificationToken);
+
+    // Ya no necesitamos desestructurar 'password' aquí, porque usersService.create ya lo omite
+    return newUser;
+  }
 
   async verifyEmail(token: string) {
     const user = await this.usersService.findOneByToken(token);

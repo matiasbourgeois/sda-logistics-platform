@@ -9,7 +9,6 @@ import * as bcrypt from 'bcrypt';
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // CORREGIDO: Sin 'async' porque findMany ya devuelve una Promise
   findAll(): Promise<Omit<User, 'password'>[]> {
     return this.prisma.user.findMany({
       select: {
@@ -23,16 +22,37 @@ export class UsersService {
         tipoContratacion: true,
         rol: true,
         verificado: true,
+        verificationToken: true, // Añadido
         createdAt: true,
         updatedAt: true,
       },
     });
   }
 
-  async create(data: Prisma.UserCreateInput): Promise<User> {
-    // La contraseña se hashea aquí directamente
-    data.password = await bcrypt.hash(data.password, 10);
-    return this.prisma.user.create({ data });
+  async create(data: CreateUserDto): Promise<Omit<User, 'password'>> {
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const newUser = await this.prisma.user.create({
+      data: {
+        ...data,
+        password: hashedPassword,
+      },
+      select: { // Añadido select para que el tipo de retorno coincida
+        id: true,
+        email: true,
+        nombre: true,
+        apellido: true,
+        telefono: true,
+        cuit: true,
+        razonSocial: true,
+        tipoContratacion: true,
+        rol: true,
+        verificado: true,
+        verificationToken: true, // Añadido
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+    return newUser; // Ya no necesitamos desestructurar aquí
   }
 
   async update(
@@ -47,11 +67,28 @@ export class UsersService {
       const updatedUser = await this.prisma.user.update({
         where: { id },
         data: dataToUpdate,
+        select: {
+            id: true,
+            email: true,
+            nombre: true,
+            apellido: true,
+            telefono: true,
+            cuit: true,
+            razonSocial: true,
+            tipoContratacion: true,
+            rol: true,
+            verificado: true,
+            verificationToken: true, // Añadido
+            createdAt: true,
+            updatedAt: true,
+        }
       });
-      const { password, ...result } = updatedUser;
-      return result;
+      return updatedUser;
     } catch (error) {
-      throw new NotFoundException(`Usuario con ID "${id}" no encontrado.`);
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+            throw new NotFoundException(`Usuario con ID "${id}" no encontrado.`);
+        }
+        throw error;
     }
   }
 
@@ -59,11 +96,28 @@ export class UsersService {
     try {
       const deletedUser = await this.prisma.user.delete({
         where: { id },
+        select: {
+            id: true,
+            email: true,
+            nombre: true,
+            apellido: true,
+            telefono: true,
+            cuit: true,
+            razonSocial: true,
+            tipoContratacion: true,
+            rol: true,
+            verificado: true,
+            verificationToken: true, // Añadido
+            createdAt: true,
+            updatedAt: true,
+        }
       });
-      const { password, ...result } = deletedUser;
-      return result;
+      return deletedUser;
     } catch (error) {
-      throw new NotFoundException(`Usuario con ID "${id}" no encontrado.`);
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+            throw new NotFoundException(`Usuario con ID "${id}" no encontrado.`);
+        }
+        throw error;
     }
   }
 
@@ -83,6 +137,15 @@ export class UsersService {
       data: {
         verificado: true,
         verificationToken: null,
+      },
+    });
+  }
+
+  async setVerificationToken(userId: string, token: string): Promise<User> {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        verificationToken: token,
       },
     });
   }
